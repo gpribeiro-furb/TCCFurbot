@@ -6,32 +6,42 @@ import numpy as np
 stream_url = 'http://192.168.1.7:81/stream'
 
 
+
+def detect_lines(frame):
+    # Convert to grayscale
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Apply Gaussian blur
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    # Apply Canny edge detector
+    edges = cv2.Canny(blur, 50, 150, apertureSize=3)
+
+    # Use HoughLinesP to detect lines
+    # These parameters can be adjusted to better detect lines in your specific setting
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=50, minLineLength=50, maxLineGap=10)
+
+    if lines is not None:
+        for line in lines:
+            x1, y1, x2, y2 = line[0]
+            cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+
+    return frame
+
+
+
 cap = cv2.VideoCapture(stream_url)
 
 while True:
     ret, frame = cap.read()
     if ret:
-        cv2.imshow('ESP32-CAM Stream', frame)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        # Process each frame for line detection
+        frame_with_lines = detect_lines(frame)
+        cv2.imshow('ESP32-CAM Stream with Lines', frame_with_lines)
+        key = cv2.waitKey(1) & 0xFF
+        if key == ord('q') or key == 27:  # 27 is the ASCII value for the escape key
             break
     else:
-        print("ret", ret)
+        print("Failed to grab frame")
         break
+
 cap.release()
-
-# stream = requests.get(stream_url, stream=True)
-#
-# byte_stream = bytes()
-# for chunk in stream.iter_content(chunk_size=1024):
-#     byte_stream += chunk
-#     a = byte_stream.find(b'\xff\xd8')
-#     b = byte_stream.find(b'\xff\xd9')
-#     if a != -1 and b != -1:
-#         jpg = byte_stream[a:b+2]
-#         byte_stream = byte_stream[b+2:]
-#         frame = cv2.imdecode(np.frombuffer(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
-#         if frame is not None:
-#             cv2.imshow('ESP32-CAM Stream', frame)
-#         if cv2.waitKey(1) == ord('q'):
-#             break
-
+cv2.destroyAllWindows()

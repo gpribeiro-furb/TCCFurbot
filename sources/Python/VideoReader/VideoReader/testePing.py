@@ -17,5 +17,5 @@ def ping_ip(ip_address):
 
 # Example usage
 if __name__ == "__main__":
-    ip_address = '192.168.1.15'
+    ip_address = '192.168.1.7'
     ping_ip(ip_address)

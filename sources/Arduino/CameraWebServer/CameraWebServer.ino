@@ -1,6 +1,11 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 
+// Adicionado para receber um post
+#include <ESPAsyncWebServer.h>
+AsyncWebServer server(80);
+
+
 //
 // WARNING!!! PSRAM IC required for UXGA resolution and high JPEG quality
 //            Ensure ESP32 Wrover Module or other board with PSRAM is selected
@@ -147,6 +152,30 @@ void setup() {
   Serial.print("Camera Ready! Use 'http://");
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
+
+  Serial.println("Iniciando config webserver...");
+  server.on("/post-data", HTTP_POST, [](AsyncWebServerRequest *request) {
+    String message;
+    if (request->hasParam("data", true)) {
+      message = request->getParam("data", true)->value();
+      // Here you can handle the data. For example, print it to the Serial
+      Serial.println(message);
+    } else {
+      message = "No data sent";
+    }
+    request->send(200, "text/plain", "Data received: " + message);
+  });
+  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        String message;
+        if (request->hasParam("message")) {
+            message = request->getParam("message")->value();
+        } else {
+            message = "No message sent";
+        }
+        request->send(200, "text/plain", "Hello, GET: " + message);
+    });
+  server.begin();
+  Serial.println("Finalizando config webserver...");
 }
 
 void loop() {
