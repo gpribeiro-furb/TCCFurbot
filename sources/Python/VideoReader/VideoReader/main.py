@@ -1,11 +1,10 @@
 import cv2
 import requests
 import numpy as np
+import time
 
 # Replace the below URL with your ESP32-CAM video stream URL
 stream_url = 'http://192.168.1.7:81/stream'
-
-
 
 def detect_lines(frame):
     # Convert to grayscale
@@ -17,7 +16,7 @@ def detect_lines(frame):
 
     # Use HoughLinesP to detect lines
     # These parameters can be adjusted to better detect lines in your specific setting
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=50, minLineLength=50, maxLineGap=10)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=25, minLineLength=120, maxLineGap=30)
 
     if lines is not None:
         for line in lines:
@@ -27,11 +26,19 @@ def detect_lines(frame):
     return frame
 
 
+process_interval = 0.2  # seconds, process frames every 0.2 seconds or 5 FPS
+last_time = 0
 
 cap = cv2.VideoCapture(stream_url)
 
 while True:
     ret, frame = cap.read()
+
+    current_time = time.time()
+    if current_time - last_time < process_interval:
+        continue  # Skip this iteration of the loop if interval not passed
+    last_time = current_time
+
     if ret:
         # Process each frame for line detection
         frame_with_lines = detect_lines(frame)
