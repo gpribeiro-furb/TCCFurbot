@@ -46,6 +46,8 @@ const char* password = "w5GM7Atu";
 void startCameraServer();
 void setupLedFlash(int pin);
 
+String requestBody;
+
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(false);
@@ -177,10 +179,19 @@ void setup() {
     });
   server.begin();
   Serial.println("Finalizando config webserver...");
+
+  // Print request body when available
+  Serial.println("Request Body:");
+  Serial.println(requestBody);
 }
 
 void loop() {
+  
+  // Print request body when available
+  Serial.println("Request Body:");
+  Serial.println(requestBody);
+
   // Do nothing. Everything is done in another task by the web server
-  delay(10000);
+  delay(100);
 }
 

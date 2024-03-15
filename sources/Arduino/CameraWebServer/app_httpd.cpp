@@ -19,6 +19,11 @@
 #include "esp32-hal-ledc.h"
 #include "sdkconfig.h"
 #include "camera_index.h"
+#include "Arduino.h"
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+// Define a global variable to store the request body
+extern String requestBody;
 
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
@@ -936,6 +941,36 @@ static int print_reg(char * p, sensor_t * s, uint16_t reg, uint32_t mask){
     return sprintf(p, "\"0x%x\":%u,", reg, s->get_reg(s, reg, mask));
 }
 
+
+// Handler function for the custom POST endpoint
+esp_err_t post_test(httpd_req_t *req) {
+    // Allocate a buffer for the incoming request body
+    char buf[100];
+    int ret, remaining = req->content_len;
+
+    // Read the request body chunk by chunk
+    while (remaining > 0) {
+        // Read a chunk of data
+        if ((ret = httpd_req_recv(req, buf, MIN(remaining, sizeof(buf)))) <= 0) {
+            if (ret == HTTPD_SOCK_ERR_TIMEOUT) {
+                // Retry receiving if timeout occurred
+                continue;
+            }
+            return ESP_FAIL;
+        }
+
+        // Append the chunk to the requestBody variable
+        requestBody = String(buf).substring(0, ret);
+        remaining -= ret;
+    }
+
+    // Send a response back
+    const char* resp_str = "POST request received!";
+    httpd_resp_send(req, resp_str, HTTPD_RESP_USE_STRLEN);
+
+    return ESP_OK;
+}
+
 static esp_err_t status_handler(httpd_req_t *req)
 {
     static char json_response[1024];
@@ -1220,6 +1255,13 @@ void startCameraServer()
 #endif
     };
 
+    httpd_uri_t test_uri = {
+        .uri       = "/test",
+        .method    = HTTP_POST,
+        .handler   = post_test,
+        .user_ctx  = NULL
+    };
+
     httpd_uri_t status_uri = {
         .uri = "/status",
         .method = HTTP_GET,
@@ -1372,6 +1414,7 @@ void startCameraServer()
         httpd_register_uri_handler(camera_httpd, &greg_uri);
         httpd_register_uri_handler(camera_httpd, &pll_uri);
         httpd_register_uri_handler(camera_httpd, &win_uri);
+        httpd_register_uri_handler(camera_httpd, &test_uri);
     }
 
     config.server_port += 1;

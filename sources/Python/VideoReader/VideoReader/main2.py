@@ -55,7 +55,7 @@ def detect_lines_and_cluster(frame):
 
 
 
-process_interval = 0.2  # seconds, process frames every 0.2 seconds or 5 FPS
+process_interval = 5  # seconds, process frames every 0.2 seconds or 5 FPS
 last_time = 0
 
 # Replace the below URL with your ESP32-CAM video stream URL

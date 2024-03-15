@@ -6,6 +6,19 @@ import time
 # Replace the below URL with your ESP32-CAM video stream URL
 stream_url = 'http://192.168.1.10:81/stream'
 
+def calculate_angle(x1, y1, x2, y2):
+    """
+    Calculate the angle (in degrees) of a line segment with endpoints (x1, y1) and (x2, y2).
+    """
+    angle_radians = np.arctan2(y2 - y1, x2 - x1)
+    angle_degrees = np.degrees(angle_radians)
+    return angle_degrees
+
+def color_by_group(group):
+    if group == 1:
+        return (0, 255, 0)
+    return (0, 0, 255)
+
 def detect_lines(frame):
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -16,12 +29,25 @@ def detect_lines(frame):
 
     # Use HoughLinesP to detect lines
     # These parameters can be adjusted to better detect lines in your specific setting
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=25, minLineLength=120, maxLineGap=30)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=25, minLineLength=50, maxLineGap=30)
 
+    groups = []
+    lines_aux = []
     if lines is not None:
         for line in lines:
             x1, y1, x2, y2 = line[0]
-            cv2.line(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            angle = calculate_angle(x1, y1, x2, y2)
+            group = -1
+            if (-45 >= angle >= -135) or (45 <= angle <= 135):
+                group = 0
+            else:
+                group = 1
+            lines_aux.append([x1, y1, x2, y2, group])
+
+    if lines_aux is not None:
+        for line in lines_aux:
+            x1, y1, x2, y2, group = line
+            cv2.line(frame, (x1, y1), (x2, y2), color_by_group(group), 2)
 
     return frame
 
@@ -34,10 +60,10 @@ cap = cv2.VideoCapture(stream_url)
 while True:
     ret, frame = cap.read()
 
-    current_time = time.time()
-    if current_time - last_time < process_interval:
-        continue  # Skip this iteration of the loop if interval not passed
-    last_time = current_time
+    # current_time = time.time()
+    # if current_time - last_time < process_interval:
+    #     continue  # Skip this iteration of the loop if interval not passed
+    # last_time = current_time
 
     if ret:
         # Process each frame for line detection
