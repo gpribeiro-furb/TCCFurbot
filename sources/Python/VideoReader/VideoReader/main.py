@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Replace the below URL with your ESP32-CAM video stream URL
-stream_url = 'http://192.168.1.10:81/stream'
+stream_url = 'http://192.168.1.21:81/stream'
 
 def detect_lines(frame):
     # Convert to grayscale
