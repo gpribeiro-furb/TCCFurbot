@@ -1,0 +1,2 @@
+ninja: Entering directory `C:\Users\panca\Documents\source\repos\TCCFurbot\sources\Android\TesteImportOpenCV\OpenCV\.cxx\Debug\2x6j294r\x86_64'
+ninja: no work to do.

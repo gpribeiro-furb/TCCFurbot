@@ -1,0 +1,17 @@
+{
+  "installationFolder": "C:\\Users\\panca\\Documents\\source\\repos\\TCCFurbot\\sources\\Android\\TesteImportOpenCV\\OpenCV\\build\\intermediates\\prefab_package\\debug\\prefab",
+  "gradlePath": ":OpenCV",
+  "packageInfo": {
+    "packageName": "OpenCV",
+    "packageSchemaVersion": 2,
+    "packageDependencies": [],
+    "modules": [
+      {
+        "moduleName": "opencv_jni_shared",
+        "moduleHeaders": "C:\\Users\\panca\\Documents\\source\\repos\\TCCFurbot\\sources\\Android\\TesteImportOpenCV\\OpenCV\\native\\jni\\include",
+        "moduleExportLibraries": [],
+        "abis": []
+      }
+    ]
+  }
+}
