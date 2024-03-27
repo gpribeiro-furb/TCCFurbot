@@ -192,6 +192,6 @@ void loop() {
   Serial.println(requestBody);
 
   // Do nothing. Everything is done in another task by the web server
-  delay(100);
+  delay(1000);
 }
 
