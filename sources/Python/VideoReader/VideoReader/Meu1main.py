@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Replace the below URL with your ESP32-CAM video stream URL
-stream_url = 'http://192.168.1.10:81/stream'
+stream_url = 'http://192.168.1.14:81/stream'
 
 def calculate_angle(x1, y1, x2, y2):
     """

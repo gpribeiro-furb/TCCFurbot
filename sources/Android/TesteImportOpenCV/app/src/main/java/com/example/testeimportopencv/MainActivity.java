@@ -3,6 +3,7 @@ package com.example.testeimportopencv;
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
@@ -14,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.opencv.android.CameraActivity;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.JavaCameraView;
@@ -87,19 +91,42 @@ public class MainActivity extends AppCompatActivity {
                     // Assuming you have already loaded your image into a Mat object (originalImage)
                     Mat grayImage = new Mat();
                     Imgproc.cvtColor(originalImage, grayImage, Imgproc.COLOR_BGR2GRAY);
-                    Imgproc.Canny(grayImage, grayImage, 50, 200, 3, false);
+                    Imgproc.Canny(grayImage, grayImage, 50, 150, 3, false);
 
                     // Detect lines using Hough Line Transform
                     Mat lines = new Mat();
-                    Imgproc.HoughLinesP(grayImage, lines, 1, Math.PI / 180, 50, 50, 10);
+                    Imgproc.HoughLinesP(grayImage, lines, 1, Math.PI / 180, 25, 50, 30);
+
+                    List<int[]> groups = new ArrayList<>();
+                    List<double[]> linesAux = new ArrayList<>();
 
                     // Draw lines on the original image
                     for (int i = 0; i < lines.rows(); i++) {
                         double[] vec = lines.get(i, 0);
                         double x1 = vec[0], y1 = vec[1], x2 = vec[2], y2 = vec[3];
-                        Point start = new Point(x1, y1);
-                        Point end = new Point(x2, y2);
-                        Imgproc.line(originalImage, start, end, new Scalar(0, 255, 0), 3);
+                        double angle = calculateAngle(x1, y1, x2, y2);
+                        int group;
+                        if ((-45 >= angle && angle >= -135) || (45 <= angle && angle <= 135)) {
+                            group = 0;
+                        } else {
+                            group = 1;
+                        }
+                        linesAux.add(new double[]{x1, y1, x2, y2, group});
+                    }
+
+                    if (linesAux != null) {
+                        for (double[] line : linesAux) {
+                            double x1 = line[0];
+                            double y1 = line[1];
+                            double x2 = line[2];
+                            double y2 = line[3];
+                            double group = line[4];
+                            Point start = new Point(x1, y1);
+                            Point end = new Point(x2, y2);
+                            // Assuming you have some method colorByGroup(group) to get the color
+                            // and drawLine method to draw the line
+                            Imgproc.line(originalImage, start, end, colorByGroup(group), 2);
+                        }
                     }
 
                     // Convert the processed Mat image to Bitmap
@@ -123,4 +150,19 @@ public class MainActivity extends AppCompatActivity {
             }
         }).start();
     }
+
+    static double calculateAngle(double x1, double y1, double x2, double y2) {
+        double angleRadians = Math.atan2(y2 - y1, x2 - x1);
+        return Math.toDegrees(angleRadians);
+    }
+
+    static Scalar colorByGroup(double group) {
+        if (group == 1) {
+//            return Color.valueOf(0f,1f,0f); // green
+            return new Scalar(0,255,0);
+        }
+//        return Color.valueOf(0f,0f,1f);// blue
+        return new Scalar(255,0,0);
+    }
+
 }
