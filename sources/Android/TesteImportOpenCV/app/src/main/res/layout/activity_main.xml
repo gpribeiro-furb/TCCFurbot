@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--<androidx.constraintlayout.widget.ConstraintLayout -->
-<FrameLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,9 +10,67 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <ImageView
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="400dp"
+        android:layout_marginTop="300dp">
+
+    <!-- Pause Icon -->
+    <ImageButton
+        android:id="@+id/btnPause"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_centerInParent="true"
+        android:scaleType="fitCenter"
+        android:background="@android:color/transparent"
+        android:src="@drawable/pause" />
+
+    <!-- Arrow Buttons -->
+    <ImageButton
+        android:id="@+id/btnUp"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_above="@id/btnPause"
+        android:layout_centerHorizontal="true"
+        android:scaleType="fitCenter"
+        android:background="@drawable/up_selector" />
+
+    <ImageButton
+        android:id="@+id/btnLeft"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_toStartOf="@id/btnPause"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:scaleType="fitCenter"
+        android:background="@drawable/left_selector" />
+
+    <ImageButton
+        android:id="@+id/btnRight"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_toEndOf="@id/btnPause"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:scaleType="fitCenter"
+        android:background="@drawable/right_selector" />
+
+    <ImageButton
+        android:id="@+id/btnDown"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:layout_below="@id/btnPause"
+        android:layout_centerHorizontal="true"
+        android:scaleType="fitCenter"
+        android:background="@drawable/down_selector" />
+
+    </RelativeLayout>
+
+    <ImageView
+        android:layout_width="400dp"
+        android:layout_height="250dp"
+        android:background="@color/white"
+        android:layout_centerHorizontal="true"
         android:id="@+id/image_view_teste"/>
 
-</FrameLayout>
+</RelativeLayout>

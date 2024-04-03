@@ -7,6 +7,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Toast;
 
@@ -37,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
 //    private static final String IMAGE_URL = "http://192.168.1.14:81/stream"; // Change this to your image URL
     private static final String IMAGE_URL = "http://192.168.1.14/capture"; // Change this to your image URL
+    private boolean running = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,14 +61,80 @@ public class MainActivity extends AppCompatActivity {
         handler = new Handler();
 
         // Schedule the task to fetch image every 100 milliseconds (0.1 seconds)
-        handler.postDelayed(imageFetcher, 50);
+        handler.postDelayed(imageFetcher, 100);
+
+        ImageButton btnUp = findViewById(R.id.btnUp);
+        ImageButton btnRight = findViewById(R.id.btnRight);
+        ImageButton btnDown = findViewById(R.id.btnDown);
+        ImageButton btnLeft = findViewById(R.id.btnLeft);
+
+        btnUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OnClickArrow(ArrowDirection.UP);
+            }
+        });
+
+        btnRight.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OnClickArrow(ArrowDirection.RIGHT);
+            }
+        });
+
+        btnDown.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OnClickArrow(ArrowDirection.DOWN);
+            }
+        });
+
+        btnLeft.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                OnClickArrow(ArrowDirection.LEFT);
+            }
+        });
+    }
+
+    private void OnClickArrow(ArrowDirection arrowDirection) {
+//        switch (arrowDirection) {
+//            case UP:
+//                break;
+//            case RIGHT:
+//                break;
+//            case DOWN:
+//                break;
+//            case LEFT:
+//                break;
+//        }
+        String url = "http://192.168.1.14/test";
+        String postData = arrowDirection.name();
+
+        PostRequestTask task = new PostRequestTask(new PostRequestTask.PostRequestListener() {
+            @Override
+            public void onPostRequestComplete(String result) {
+                // Handle the response
+                if (result != null) {
+                    // Response received successfully
+                    Log.d(TAG, "Response: " + result);
+                } else {
+                    // Error occurred
+                    Log.e(TAG, "Error: Failed to receive response");
+                }
+            }
+        });
+        task.execute(url, postData);
     }
 
     // Runnable to fetch image from URL
     private Runnable imageFetcher = new Runnable() {
         @Override
         public void run() {
-            fetchImage();
+            if(!running) {
+                running = true;
+                fetchImage();
+            }
             // Schedule the next execution after 100 milliseconds
             handler.postDelayed(this, 50);
         }
@@ -146,6 +217,8 @@ public class MainActivity extends AppCompatActivity {
                     input.close();
                 } catch (IOException e) {
                     e.printStackTrace();
+                } finally {
+                    running = false;
                 }
             }
         }).start();
@@ -165,4 +238,10 @@ public class MainActivity extends AppCompatActivity {
         return new Scalar(255,0,0);
     }
 
+    public enum ArrowDirection {
+        UP,
+        RIGHT,
+        DOWN,
+        LEFT
+    }
 }
