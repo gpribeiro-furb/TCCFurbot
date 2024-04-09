@@ -37,6 +37,9 @@ AsyncWebServer server(80);
 //#define CAMERA_MODEL_DFRobot_Romeo_ESP32S3 // Has PSRAM
 #include "camera_pins.h"
 
+#include "PinDefinitionsAndMore.h" //Define macros for input and output pin etc.
+#include <IRremote.hpp>
+
 // ===========================
 // Enter your WiFi credentials
 // ===========================
@@ -156,42 +159,105 @@ void setup() {
   Serial.print(WiFi.localIP());
   Serial.println("' to connect");
 
-  Serial.println("Iniciando config webserver...");
-  server.on("/post-data", HTTP_POST, [](AsyncWebServerRequest *request) {
-    String message;
-    if (request->hasParam("data", true)) {
-      message = request->getParam("data", true)->value();
-      // Here you can handle the data. For example, print it to the Serial
-      Serial.println(message);
-    } else {
-      message = "No data sent";
-    }
-    request->send(200, "text/plain", "Data received: " + message);
-  });
-  server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
-        if (request->hasParam("message")) {
-            message = request->getParam("message")->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
-    });
-  server.begin();
-  Serial.println("Finalizando config webserver...");
+  Serial.println("Iniciando infrared transmitter...");
+  IrSender.begin();
+  Serial.println("Concluído infrared transmitter...");
 
-  // Print request body when available
-  Serial.println("Request Body:");
-  Serial.println(requestBody);
+//  if defined(IR_SEND_PIN)
+//    IrSender.begin(); // Start with IR_SEND_PIN as send pin and enable feedback LED at default feedback LED pin
+//#else
+//    IrSender.begin(3, ENABLE_LED_FEEDBACK); // Specify send pin and enable feedback LED at default feedback LED pin
+//#endif
+
+//#if defined(IR_SEND_PIN)
+//Serial.println(F("Ready to send IR signals at pin " STR(IR_SEND_PIN)));
+//#else
+//    Serial.println(F("Ready to send IR signals at pin 3"));
+//#endif
 }
 
-void loop() {
-  
-  // Print request body when available
-  Serial.println("Request Body:");
-  Serial.println(requestBody);
+// Storage for the recorded code
+// int codeType = -1; // The type of code
+// unsigned long codeValue; // The code value if not raw
+// unsigned int rawCodes[RAWBUF]; // The durations if raw
+// int codeLen; // The length of the code
+// int toggle = 0; // The RC5/6 toggle state
 
-  // Do nothing. Everything is done in another task by the web server
+// int lastButtonState;
+
+// void sendCode(int repeat) {
+//   if (codeType == NEC) {
+//     if (repeat) {
+//       irsend.sendNEC(REPEAT, codeLen);
+//       Serial.println("Sent NEC repeat");
+//     } 
+//     else {
+//       irsend.sendNEC(codeValue, codeLen);
+//       Serial.print("Sent NEC ");
+//       Serial.println(codeValue, HEX);
+//     }
+//   } 
+//   else if (codeType == SONY) {
+//     irsend.sendSony(codeValue, codeLen);
+//     Serial.print("Sent Sony ");
+//     Serial.println(codeValue, HEX);
+//   } 
+//   else if (codeType == RC5 || codeType == RC6) {
+//     if (!repeat) {
+//       // Flip the toggle bit for a new button press
+//       toggle = 1 - toggle;
+//     }
+//     // Put the toggle bit into the code to send
+//     codeValue = codeValue & ~(1 << (codeLen - 1));
+//     codeValue = codeValue | (toggle << (codeLen - 1));
+//     if (codeType == RC5) {
+//       Serial.print("Sent RC5 ");
+//       Serial.println(codeValue, HEX);
+//       irsend.sendRC5(codeValue, codeLen);
+//     } 
+//     else {
+//       irsend.sendRC6(codeValue, codeLen);
+//       Serial.print("Sent RC6 ");
+//       Serial.println(codeValue, HEX);
+//     }
+//   } 
+//   else if (codeType == UNKNOWN /* i.e. raw */) {
+//     // Assume 38 KHz
+//     irsend.sendRaw(rawCodes, codeLen, 38);
+//     Serial.println("Sent raw");
+//   }
+// }
+
+
+
+// IRsend irsend;
+
+// #define IR_LED_PIN 3 // Define the pin number for the IR LED
+// IRsend irsend(IR_LED_PIN); // Initialize IRsend object with the specified pin
+
+//ATUAL
+uint16_t sAddress_Array[]= {0x00FF,0x00FF,0x00FF,0x00FF,0x00FF,0x00FF,0x00FF,0x00FF};
+uint8_t sCommand_Array[]= {0x68,0x98,0xB0,0x30,0x7A,0x10,0x38,0x52};
+uint8_t sRepeats = 3;
+
+void loop() {
   delay(1000);
+
+  if(requestBody == "UP") {
+    IrSender.sendNEC(sAddress_Array[1] , sCommand_Array[1], sRepeats);
+  } else if(requestBody == "DOWN") {
+    IrSender.sendNEC(sAddress_Array[0] , sCommand_Array[0], sRepeats);
+  } else if(requestBody == "LEFT") {
+    IrSender.sendNEC(sAddress_Array[5] , sCommand_Array[5], sRepeats);
+  } else if(requestBody == "RIGHT") {
+    IrSender.sendNEC(sAddress_Array[4] , sCommand_Array[4], sRepeats);
+  }
+
+  if(requestBody != "") {
+    // Print request body when available
+    Serial.println("Request Body:");
+    Serial.println(requestBody);
+    requestBody = "";
+  }
 }
 
