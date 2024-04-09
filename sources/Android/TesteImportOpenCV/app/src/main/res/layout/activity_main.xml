@@ -66,11 +66,27 @@
 
     </RelativeLayout>
 
+<!--    <VideoView-->
+<!--        android:layout_width="400dp"-->
+<!--        android:layout_height="250dp"-->
+<!--        android:background="@color/white"-->
+<!--        android:layout_centerHorizontal="true"-->
+<!--        android:id="@+id/video_view_teste"/>-->
+
     <ImageView
         android:layout_width="400dp"
         android:layout_height="250dp"
         android:background="@color/white"
         android:layout_centerHorizontal="true"
         android:id="@+id/image_view_teste"/>
+
+    <EditText
+        android:id="@+id/text_ip"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/image_view_teste"
+        android:hint="IP address"
+        android:inputType="text"
+        android:maxLines="1"/>
 
 </RelativeLayout>
