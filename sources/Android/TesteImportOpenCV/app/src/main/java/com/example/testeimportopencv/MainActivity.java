@@ -21,6 +21,12 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+
+import com.github.niqdev.mjpeg.DisplayMode;
+import com.github.niqdev.mjpeg.Mjpeg;
+import com.github.niqdev.mjpeg.MjpegSurfaceView;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -48,8 +54,10 @@ public class MainActivity extends AppCompatActivity {
     private String TAG = "TesteOpenCV";
     private ImageView imageView;
     private Handler handler;
-//    private static final String IMAGE_URL = "http://192.168.1.14:81/stream"; // Change this to your image URL
-    private String BASE_URL = "http://172.20.10.14"; // Change this to your image URL
+
+//    private String CURRENT_URL = "172.20.10.14";
+    private String CURRENT_URL = "192.168.1.14";
+    private String BASE_URL = "http://" + CURRENT_URL;
     private boolean running = false;
     private LinkedList<Bitmap> imagens = new LinkedList<>();
 
@@ -69,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         EditText ipInput = findViewById(R.id.text_ip);
-        ipInput.setText("172.20.10.14");
+        ipInput.setText(CURRENT_URL);
 
         // Set up the action listener for the EditText
         ipInput.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -86,32 +94,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-//        VideoCapture videoCapture = new VideoCapture("http://192.168.1.14:81/stream");
-//        new Thread(new Runnable() {
-//            @Override
-//            public void run() {
-//                while(true) {
-//                    try {
-//                        Thread.sleep(500);
-//                        Mat mat = new Mat();
-//                        boolean teste = videoCapture.read(mat);
-//                        // Convert the processed Mat image to Bitmap
-//                        Bitmap renderedImage = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
-//                        Utils.matToBitmap(mat, renderedImage);
-//                        // Update UI on the main thread
-//                        runOnUiThread(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                // Set the fetched image to the ImageView
-//                                imageView.setImageBitmap(renderedImage);
-//                            }
-//                        });
-//                    } catch (Exception e) {
-//                        Log.e(TAG, e.getMessage());
-//                    }
-//                }
-//            }
-//        }).start();
+        MjpegSurfaceView mjpegView = findViewById(R.id.playerView);
+
+        String streamUrl = BASE_URL + ":81/stream";
+
+        Mjpeg.newInstance()
+//                .credential("USERNAME", "PASSWORD")
+                .open(streamUrl)
+                .subscribe(inputStream -> {
+                    mjpegView.setSource(inputStream);
+                    mjpegView.setDisplayMode(DisplayMode.BEST_FIT);
+                    mjpegView.showFps(true);
+                });
+
 
 
         imageView = findViewById(R.id.image_view_teste);
