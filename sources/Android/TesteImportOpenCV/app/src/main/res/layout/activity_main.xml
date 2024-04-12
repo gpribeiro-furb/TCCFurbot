@@ -74,25 +74,31 @@
 <!--        android:layout_centerHorizontal="true"-->
 <!--        android:id="@+id/video_view_teste"/>-->
 
-    <com.github.niqdev.mjpeg.MjpegSurfaceView
-        android:id="@+id/playerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        stream:type="stream_default" />
-
-    <ImageView
+    <RelativeLayout
         android:layout_width="400dp"
         android:layout_height="250dp"
-        android:background="@color/white"
-        android:layout_centerHorizontal="true"
+        android:id="@+id/local_imagem">
+        <com.github.niqdev.mjpeg.MjpegSurfaceView
+            android:id="@+id/playerView"
+            android:layout_width="400dp"
+            android:layout_height="250dp"
+            stream:type="stream_default" />
 
-        android:id="@+id/image_view_teste"/>
+        <!--    <ImageView-->
+        <!--        android:layout_width="400dp"-->
+        <!--        android:layout_height="250dp"-->
+        <!--        android:background="@color/white"-->
+        <!--        android:layout_centerHorizontal="true"-->
+
+        <!--        android:id="@+id/image_view_teste"/>-->
+    </RelativeLayout>
+
 
     <EditText
         android:id="@+id/text_ip"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/image_view_teste"
+        android:layout_below="@id/local_imagem"
         android:hint="IP address"
         android:inputType="text"
         android:maxLines="1"/>

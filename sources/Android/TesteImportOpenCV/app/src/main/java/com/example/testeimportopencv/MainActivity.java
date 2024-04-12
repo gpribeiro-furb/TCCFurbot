@@ -56,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
 
 //    private String CURRENT_URL = "172.20.10.14";
-    private String CURRENT_URL = "192.168.1.14";
+    private String CURRENT_URL = "192.168.1.16";
     private String BASE_URL = "http://" + CURRENT_URL;
     private boolean running = false;
     private LinkedList<Bitmap> imagens = new LinkedList<>();
@@ -109,11 +109,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        imageView = findViewById(R.id.image_view_teste);
-        handler = new Handler();
-
-        handler.postDelayed(imageFetcher, 500);
-        handler.postDelayed(imageProcessing, 50);
+//        imageView = findViewById(R.id.image_view_teste);
+//        handler = new Handler();
+//
+//        handler.postDelayed(imageFetcher, 500);
+//        handler.postDelayed(imageProcessing, 50);
 
         ImageButton btnUp = findViewById(R.id.btnUp);
         ImageButton btnRight = findViewById(R.id.btnRight);

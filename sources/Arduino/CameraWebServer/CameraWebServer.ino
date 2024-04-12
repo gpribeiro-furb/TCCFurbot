@@ -55,6 +55,12 @@ void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(false);
   Serial.println();
+  
+  pinMode(4, OUTPUT);
+  digitalWrite(4, HIGH); // turn the LED on
+  delay(500);             // wait for 500 milliseconds
+  digitalWrite(4, LOW);  // turn the LED off
+  delay(500);             // wait for 500 milliseconds
 
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
