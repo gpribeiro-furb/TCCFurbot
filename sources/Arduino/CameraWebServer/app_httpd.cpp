@@ -1400,6 +1400,9 @@ void startCameraServer()
     // load ids from flash partition
     recognizer.set_ids_from_flash();
 #endif
+
+    config.server_port += 1;
+    config.ctrl_port += 1;
     log_i("Starting web server on port: '%d'", config.server_port);
     if (httpd_start(&camera_httpd, &config) == ESP_OK)
     {

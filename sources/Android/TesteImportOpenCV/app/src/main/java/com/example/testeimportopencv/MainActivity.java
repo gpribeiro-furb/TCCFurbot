@@ -1,53 +1,51 @@
 package com.example.testeimportopencv;
 
-import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.github.niqdev.mjpeg.DisplayMode;
 import com.github.niqdev.mjpeg.Mjpeg;
+import com.github.niqdev.mjpeg.MjpegInputStream;
+import com.github.niqdev.mjpeg.MjpegInputStreamDefault;
 import com.github.niqdev.mjpeg.MjpegSurfaceView;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import org.opencv.android.CameraActivity;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.JavaCameraView;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.android.Utils;
-import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
-import org.opencv.videoio.VideoCapture;
+
+import rx.Observable;
+import rx.Subscription;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,10 +54,17 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
 
 //    private String CURRENT_URL = "172.20.10.14";
-    private String CURRENT_URL = "192.168.1.16";
+    private String CURRENT_URL = "192.168.4.1";
     private String BASE_URL = "http://" + CURRENT_URL;
+    private String IMAGE_URL = BASE_URL + ":81/capture";
+    private String STREAM_URL = BASE_URL + ":82/stream";
     private boolean running = false;
     private LinkedList<Bitmap> imagens = new LinkedList<>();
+    MjpegSurfaceView mjpegView;
+    CustomMjpegSurfaceView customMjpegView;
+    Mjpeg mjpeg;
+    Subscription subscription;
+    private CustomMjpegInputStream stream;
 
 
     @Override
@@ -76,6 +81,61 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        setupButtons();
+        setupCampoIp();
+        setupVisor();
+
+        connectVisor();
+    }
+
+    // Method to fetch image from URL
+    private void requestStreamImage() {
+//        Thread thread = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+        try {
+
+            Bitmap teste = customMjpegView.getFrame();
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    imageView.setImageBitmap(teste);
+                }
+            });
+        } catch (Exception e) {
+            Log.e(TAG, "Erro: " + e.getMessage());
+        }
+//            }
+//        });
+//        thread.start();
+    }
+
+    private void setupVisor() {
+        customMjpegView = findViewById(R.id.playerView);
+        mjpeg = Mjpeg.newInstance();
+
+        imageView = findViewById(R.id.image_view_teste);
+        handler = new Handler();
+
+        handler.postDelayed(imageFetcher, 50);
+        handler.postDelayed(imageProcessing, 150);
+//        handler.postDelayed(getImageFromStream, 2000);
+    }
+
+    private void connectVisor() {
+        try {
+            subscription = mjpeg.open(STREAM_URL)
+                    .subscribe(inputStream -> {
+                        customMjpegView.setSource(inputStream);
+                        customMjpegView.setDisplayMode(DisplayMode.BEST_FIT);
+                        customMjpegView.showFps(true);
+                    });
+        } catch (Exception e) {
+            Log.e(TAG, "Error: Não foi possível conectar a stream no IP: " + STREAM_URL + "\n" + e.getMessage());
+        }
+    }
+
+    private void setupCampoIp() {
         EditText ipInput = findViewById(R.id.text_ip);
         ipInput.setText(CURRENT_URL);
 
@@ -88,33 +148,16 @@ public class MainActivity extends AppCompatActivity {
                                 event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
                     // Get the text from the EditText when Enter key is pressed
                     BASE_URL = "http://" + ipInput.getText().toString();
+                    STREAM_URL = BASE_URL + ":81/stream";
+//                    connectVisor();
                     return true;
                 }
                 return false;
             }
         });
+    }
 
-        MjpegSurfaceView mjpegView = findViewById(R.id.playerView);
-
-        String streamUrl = BASE_URL + ":81/stream";
-
-        Mjpeg.newInstance()
-//                .credential("USERNAME", "PASSWORD")
-                .open(streamUrl)
-                .subscribe(inputStream -> {
-                    mjpegView.setSource(inputStream);
-                    mjpegView.setDisplayMode(DisplayMode.BEST_FIT);
-                    mjpegView.showFps(true);
-                });
-
-
-
-//        imageView = findViewById(R.id.image_view_teste);
-//        handler = new Handler();
-//
-//        handler.postDelayed(imageFetcher, 500);
-//        handler.postDelayed(imageProcessing, 50);
-
+    private void setupButtons() {
         ImageButton btnUp = findViewById(R.id.btnUp);
         ImageButton btnRight = findViewById(R.id.btnRight);
         ImageButton btnDown = findViewById(R.id.btnDown);
@@ -174,7 +217,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             fetchImage();
-            handler.postDelayed(this, 500);
+            handler.postDelayed(this, 150);
         }
     };
 
@@ -184,6 +227,14 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             processImage();
             handler.postDelayed(this, 50);
+        }
+    };
+
+    private Runnable getImageFromStream = new Runnable() {
+        @Override
+        public void run() {
+            requestStreamImage();
+            handler.postDelayed(this, 2000);
         }
     };
 
@@ -259,7 +310,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 try {
                     long startTime = System.nanoTime();
-                    URL url = new URL(BASE_URL + "/capture");
+                    URL url = new URL(IMAGE_URL);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
                     connection.setDoInput(true);
                     connection.connect();
