@@ -54,7 +54,8 @@ public class MainActivity extends AppCompatActivity {
     private Handler handler;
 
 //    private String CURRENT_URL = "172.20.10.14";
-    private String CURRENT_URL = "192.168.4.1";
+//    private String CURRENT_URL = "192.168.4.1";
+    private String CURRENT_URL = "192.168.1.12";
     private String BASE_URL = "http://" + CURRENT_URL;
     private String IMAGE_URL = BASE_URL + ":81/capture";
     private String STREAM_URL = BASE_URL + ":82/stream";

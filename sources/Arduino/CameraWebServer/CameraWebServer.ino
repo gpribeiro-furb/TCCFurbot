@@ -43,10 +43,12 @@ AsyncWebServer server(80);
 // ===========================
 // Enter your WiFi credentials
 // ===========================
-// const char* ssid = "MultilaserPRO_ZTE_2.4G_drtPEm";
-// const char* password = "w5GM7Atu";
+const char* ssidHome = "MultilaserPRO_ZTE_2.4G_drtPEm";
+const char* passwordHome = "w5GM7Atu";
 const char* ssid     = "ESP32-Access-Point";
 const char* password = "123456789";
+
+const bool testingHome = true;
 
 void startCameraServer();
 void setupLedFlash(int pin);
@@ -151,33 +153,34 @@ void setup() {
   setupLedFlash(LED_GPIO_NUM);
 #endif
 
-  // WiFi.begin(ssid, password);
-  // WiFi.setSleep(false);
+  if(testingHome) {
+    WiFi.begin(ssidHome, passwordHome);
+    WiFi.setSleep(false);
 
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
-  // Serial.println("");
-  // Serial.println("WiFi connected");
-
-
-  // Serial.print("Camera Ready! Use 'http://");
-  // Serial.print(WiFi.localIP());
-  // Serial.println("' to connect");
+    while (WiFi.status() != WL_CONNECTED) {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("WiFi connected");
 
 
-  // Connect to Wi-Fi network with SSID and password
-  Serial.print("Setting AP (Access Point)…");
-  // Remove the password parameter, if you want the AP (Access Point) to be open
-  WiFi.softAP(ssid, password);
+    Serial.print("Camera Ready! Use 'http://");
+    Serial.print(WiFi.localIP());
+    Serial.println("' to connect");
+  } else {
+    // Connect to Wi-Fi network with SSID and password
+    Serial.print("Setting AP (Access Point)…");
+    // Remove the password parameter, if you want the AP (Access Point) to be open
+    WiFi.softAP(ssid, password);
 
-  IPAddress IP = WiFi.softAPIP();
-  Serial.print("AP IP address: ");
-  Serial.println(IP);
-  
-  server.begin();
-  
+    IPAddress IP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(IP);
+    
+    server.begin();
+  }
+
   startCameraServer();
 
 
