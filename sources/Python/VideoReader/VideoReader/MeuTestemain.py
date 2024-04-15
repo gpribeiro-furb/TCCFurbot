@@ -25,11 +25,13 @@ def detect_lines(frame):
     # Apply Gaussian blur
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
     # Apply Canny edge detector
-    edges = cv2.Canny(blur, 50, 150, apertureSize=3)
+    edges = cv2.Canny(blur, 10, 25, apertureSize=3)
 
     # Use HoughLinesP to detect lines
     # These parameters can be adjusted to better detect lines in your specific setting
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=25, minLineLength=50, maxLineGap=30)
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=70, maxLineGap=60)
+
+    cv2.imshow('Grayscale Image', edges)
 
     groups = []
     lines_aux = []
@@ -68,7 +70,8 @@ while True:
     if ret:
         # Process each frame for line detection
         frame_with_lines = detect_lines(frame)
-        cv2.imshow('ESP32-CAM Stream with Lines', frame_with_lines)
+        # cv2.imshow('ESP32-CAM Stream with Lines', frame_with_lines)
+        cv2.imshow('ESP32-CAM Stream with Lines', frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q') or key == 27:  # 27 is the ASCII value for the escape key
             break

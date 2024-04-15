@@ -19,11 +19,29 @@ def color_by_group(group):
         return (0, 255, 0)
     return (0, 0, 255)
 
+
 def detect_lines(frame):
-    # Convert to grayscale
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # Define the target color and the range around it
+    target_color = np.array([100, 100, 105])
+    color_range = 25  # Define the range around the target color
+
+    # Convert the frame to the LAB color space
+    lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+
+    # Compute the lower and upper bounds for the color range
+    lower_bound = np.array([max(0, target_color[0] - color_range), max(0, target_color[1] - color_range), max(0, target_color[2] - color_range)])
+    upper_bound = np.array([min(255, target_color[0] + color_range), min(255, target_color[1] + color_range), min(255, target_color[2] + color_range)])
+
+    # Create a mask to filter out only the colors within the specified range
+    mask = cv2.inRange(lab, lower_bound, upper_bound)
+
+    # Apply the mask to the grayscale image
+    gray = cv2.bitwise_and(frame, frame, mask=mask)
+    gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
+
     # Apply Gaussian blur
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
+
     # Apply Canny edge detector
     edges = cv2.Canny(blur, 50, 150, apertureSize=3)
 
@@ -49,7 +67,11 @@ def detect_lines(frame):
             x1, y1, x2, y2, group = line
             cv2.line(frame, (x1, y1), (x2, y2), color_by_group(group), 2)
 
+    # Display the grayscale image
+    cv2.imshow('Grayscale Image', gray)
+
     return frame
+
 
 
 process_interval = 0.2  # seconds, process frames every 0.2 seconds or 5 FPS
