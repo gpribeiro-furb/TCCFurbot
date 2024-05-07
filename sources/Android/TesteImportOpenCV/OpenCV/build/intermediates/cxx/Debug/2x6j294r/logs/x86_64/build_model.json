@@ -143,7 +143,7 @@
         "rootBuildGradleFolder": "C:\\Users\\panca\\Documents\\source\\repos\\TCCFurbot\\sources\\Android\\TesteImportOpenCV",
         "sdkFolder": "C:\\Users\\panca\\AppData\\Local\\Android\\Sdk",
         "isBuildOnlyTargetAbiEnabled": true,
-        "ideBuildTargetAbi": "x86_64,arm64-v8a",
+        "ideBuildTargetAbi": "x86_64,x86",
         "isCmakeBuildCohabitationEnabled": false,
         "isPrefabEnabled": false
       },

@@ -40,6 +40,7 @@ import org.opencv.android.Utils;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import rx.Observable;
@@ -55,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
 
 //    private String CURRENT_URL = "172.20.10.14";
 //    private String CURRENT_URL = "192.168.4.1";
-    private String CURRENT_URL = "192.168.1.12";
+    private String CURRENT_URL = "192.168.1.2";
     private String BASE_URL = "http://" + CURRENT_URL;
     private String IMAGE_URL = BASE_URL + ":81/capture";
     private String STREAM_URL = BASE_URL + ":82/stream";
@@ -66,6 +67,7 @@ public class MainActivity extends AppCompatActivity {
     Mjpeg mjpeg;
     Subscription subscription;
     private CustomMjpegInputStream stream;
+    private boolean _deteccaoTapete = false;
 
 
     @Override
@@ -251,11 +253,33 @@ public class MainActivity extends AppCompatActivity {
             // Assuming you have already loaded your image into a Mat object (originalImage)
             Mat grayImage = new Mat();
             Imgproc.cvtColor(originalImage, grayImage, Imgproc.COLOR_BGR2GRAY);
-            Imgproc.Canny(grayImage, grayImage, 50, 150, 3, false);
 
-            // Detect lines using Hough Line Transform
             Mat lines = new Mat();
-            Imgproc.HoughLinesP(grayImage, lines, 1, Math.PI / 180, 25, 50, 30);
+
+            if(_deteccaoTapete) {
+                Imgproc.GaussianBlur(grayImage, grayImage, new Size(3,3), -1);
+                Imgproc.Canny(grayImage, grayImage, 10, 25, 3, false);
+                Imgproc.HoughLinesP(grayImage, lines, 1, Math.PI / 180, 100, 70, 60);
+            } else {
+                Imgproc.Canny(grayImage, grayImage, 50, 150, 3, false);
+                Imgproc.HoughLinesP(grayImage, lines, 1, Math.PI / 180, 25, 50, 30);
+            }
+
+
+
+//            Bitmap renderedImage = Bitmap.createBitmap(originalImage.cols(), originalImage.rows(), Bitmap.Config.ARGB_8888);
+//            Utils.matToBitmap(grayImage, renderedImage);
+//
+//            // Update UI on the main thread
+//            runOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    // Set the fetched image to the ImageView
+//                    imageView.setImageBitmap(renderedImage);
+//                }
+//            });
+
+
 
             List<int[]> groups = new ArrayList<>();
             List<double[]> linesAux = new ArrayList<>();

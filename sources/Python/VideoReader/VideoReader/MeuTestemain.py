@@ -4,7 +4,7 @@ import numpy as np
 import time
 
 # Replace the below URL with your ESP32-CAM video stream URL
-stream_url = 'http://192.168.1.12:82/stream'
+stream_url = 'http://192.168.1.2:82/stream'
 
 def calculate_angle(x1, y1, x2, y2):
     """
@@ -23,15 +23,20 @@ def detect_lines(frame):
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     # Apply Gaussian blur
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    # Apply Canny edge detector
-    edges = cv2.Canny(blur, 10, 25, apertureSize=3)
+    # blur = cv2.blur(gray, (3, 3))
+    # # Apply Canny edge detector
+    # edges = cv2.Canny(blur, 10, 25, apertureSize=3)
+    #
+    # # Use HoughLinesP to detect lines
+    # # These parameters can be adjusted to better detect lines in your specific setting
+    # lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=70, maxLineGap=60)
 
-    # Use HoughLinesP to detect lines
-    # These parameters can be adjusted to better detect lines in your specific setting
-    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=70, maxLineGap=60)
+    # cv2.imshow('Grayscale Image', edges)
 
-    cv2.imshow('Grayscale Image', edges)
+    gaussianBlur = cv2.GaussianBlur(gray, (3, 3), -1)
+    gaussianEdges = cv2.Canny(gaussianBlur, 10, 25, apertureSize=3)
+    lines = cv2.HoughLinesP(gaussianEdges, 1, np.pi / 180, threshold=100, minLineLength=5, maxLineGap=50)
+    cv2.imshow('Gaussian Image', gaussianEdges)
 
     groups = []
     lines_aux = []
