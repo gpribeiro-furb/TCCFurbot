@@ -11,6 +11,24 @@ _lastGrupos = []
 _lastId = 1
 _threshold = 50
 
+
+def calcular_media_dos_y_do_grupo(grupo):
+    # Inicialize uma lista para armazenar as médias dos valores de y de cada linha
+    medias_y = []
+
+    # Itere sobre as linhas no grupo
+    for linha in grupo[3]:  # grupo[3] contém a lista de linhas
+        x1, y1, x2, y2, _ = linha  # Ignorando "group" porque não precisamos dela aqui
+        # Calcule a média dos valores de y da linha atual e adicione à lista
+        media_y_linha = (y1 + y2) / 2
+        medias_y.append(media_y_linha)
+
+    # Calcule a média das médias dos valores de y das linhas
+    media_geral_y = sum(medias_y) / len(medias_y)
+
+    grupo[2] = media_geral_y
+    return media_geral_y
+
 def calculate_angle(x1, y1, x2, y2):
     """
     Calculate the angle (in degrees) of a line segment with endpoints (x1, y1) and (x2, y2).
@@ -30,15 +48,31 @@ def agrupaLinha(line):
     x1, y1, x2, y2, group = line
     if(group == "horizontal"):
         mediaLinha = (y1+y2)/2
-        if(_grupos.__len__() == 0):
-            _grupos.append([_lastId, group, mediaLinha, [line]])
-            _lastId = _lastId + 1
-        else:
-            for i in range(_grupos.__len__()):
-                id, direcao, media, linhas = _grupos[i]
-                if(media - _threshold < mediaLinha < media + _threshold):
-                    linhas.append(line)
-                    _grupos[i] = [id, direcao, media, linhas]
+        for i in range(_lastGrupos.__len__()):
+            idLastGrupo, direcaoLastGrupo, mediaLastGrupo, linhasLastGrupo = _lastGrupos[i]
+            if (mediaLastGrupo - _threshold < mediaLinha < mediaLastGrupo + _threshold):
+                for i in range(_grupos.__len__()):
+                    id, direcao, media, linhas = _grupos[i]
+                    if id == idLastGrupo:
+                        linhas.append(line)
+                        _grupos[i] = [id, direcao, media, linhas]
+                        calcular_media_dos_y_do_grupo(_grupos[i])
+                        return
+                _grupos.append([idLastGrupo, group, mediaLinha, [line]])
+                return
+
+        for i in range(_grupos.__len__()):
+            id, direcao, media, linhas = _grupos[i]
+            if(media - _threshold < mediaLinha < media + _threshold):
+                linhas.append(line)
+                _grupos[i] = [id, direcao, media, linhas]
+                calcular_media_dos_y_do_grupo(_grupos[i])
+                return
+
+        _grupos.append([_lastId, group, mediaLinha, [line]])
+        _lastId = _lastId + 1
+        return
+
 
 
 #   Grupo terá: {
@@ -52,14 +86,17 @@ def agrupaLinha(line):
 #   2. Adicionar linhas atuais no _grupos
 #       1-  Passar pelos grupos da direção correta
 #       2-  Verificar se tem alguma média que está perto (threshold) do valor médio do Y da linha atual
-#       3-  Adicionar linha no grupo, recaclcular média do grupo
+#           2.1 - Usa os grupos antigos para ter as médias, caso não tenha um grupo antigo perto da linha atual, cria um grupo
+#       3-  Adicionar linha no grupo, recalcular média do grupo
+#
 
 
 def detect_lines(frame):
-
+    global _grupos
     _lastGrupos.clear()
-    _lastGrupos.append(_grupos)
-    _grupos.clear()
+    if len(_grupos) > 0:
+        _lastGrupos.extend(_grupos)
+    _grupos = []
 
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -90,7 +127,10 @@ def detect_lines(frame):
             cv2.line(frame, (x1, y1), (x2, y2), color_by_group(group), 2)
             agrupaLinha(line)
 
-    print(_grupos)
+    print()
+    print("========")
+    for grupo in _grupos:
+        print("Id: ", grupo[0], " Média: ", grupo[2], " Qntd. linhas: ", len(grupo[3]))
 
     return frame
 
@@ -99,6 +139,7 @@ process_interval = 0.2  # seconds, process frames every 0.2 seconds or 5 FPS
 last_time = 0
 
 cap = cv2.VideoCapture(stream_url)
+paused = False  # Variable to track pause state
 
 while True:
     ret, frame = cap.read()
@@ -109,12 +150,15 @@ while True:
     last_time = current_time
 
     if ret:
-        # Process each frame for line detection
-        frame_with_lines = detect_lines(frame)
-        cv2.imshow('ESP32-CAM Stream with Lines', frame_with_lines)
         key = cv2.waitKey(1) & 0xFF
         if key == ord('q') or key == 27:  # 27 is the ASCII value for the escape key
             break
+        elif key == ord(' '):  # Toggle pause if spacebar is pressed
+            paused = not paused
+
+        if not paused:  # Process each frame for line detection if not paused
+            frame_with_lines = detect_lines(frame)
+            cv2.imshow('ESP32-CAM Stream with Lines', frame_with_lines)
     else:
         print("Failed to grab frame")
         break
