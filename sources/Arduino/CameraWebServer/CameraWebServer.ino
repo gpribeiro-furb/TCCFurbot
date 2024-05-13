@@ -276,6 +276,8 @@ void loop() {
     IrSender.sendNEC(sAddress_Array[5] , sCommand_Array[5], sRepeats);
   } else if(requestBody == "RIGHT") {
     IrSender.sendNEC(sAddress_Array[4] , sCommand_Array[4], sRepeats);
+  } else if(requestBody == "STOP") {
+    IrSender.sendNEC(0xFF02FD, 0x00, sRepeats);
   }
 
   if(requestBody != "") {

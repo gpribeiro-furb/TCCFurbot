@@ -22,6 +22,7 @@ bool Cima = false;
 bool Baixo = false;
 bool Esquerda = false;
 bool Direita = false;
+bool Stop = false;
 bool InicioMovimento = false;
 bool AjusteGeral = false;
 bool MovimentoTeste = true;
@@ -61,6 +62,7 @@ void limparVariaveisMovimento() {
   Cima = false;
   Baixo = false;
   Direita = false;
+  Stop = false;
   Serial.println("Limpado");
 }
 
@@ -73,37 +75,41 @@ void loop() {
     irrecv.resume();
 
     //Se o robô está parado
-    if(!Esquerda && !Cima && !Direita && !Baixo && !AjusteGeral) {
-      switch(results.value) {
-        case 0xFF22DD:
-        case 0xFF0008F7:
-        //Esquerda
-        limparVariaveisMovimento();
-        Esquerda = true;
-        break;
-        
-        case 0xFF629D:
-        case 0xFF0019E6:
-        //Cima
-        limparVariaveisMovimento();
-        Cima = true;
-        break;
-        
-        case 0xFFC23D:
-        case 0xFF005EA1:
-        //Direita
-        limparVariaveisMovimento();
-        Direita = true;
-        break;
-        
-        case 0xFFA857:
-        case 0xFF0016E9:
-        //Baixo
-        limparVariaveisMovimento();
-        Baixo = true;
-        break;
-      }
+    switch(results.value) {
+      case 0xFF22DD:
+      case 0xFF0008F7:
+      //Esquerda
+      limparVariaveisMovimento();
+      Esquerda = true;
+      break;
+      
+      case 0xFF629D:
+      case 0xFF0019E6:
+      //Cima
+      limparVariaveisMovimento();
+      Cima = true;
+      break;
+      
+      case 0xFFC23D:
+      case 0xFF005EA1:
+      //Direita
+      limparVariaveisMovimento();
+      Direita = true;
+      break;
+      
+      case 0xFFA857:
+      case 0xFF0016E9:
+      //Baixo
+      limparVariaveisMovimento();
+      Baixo = true;
+      break;
+      
+      case 0xFF02FD:
+      case 0xBF4000FF:
+      limparVariaveisMovimento();
+      break;
     }
+    
   }
 
 // ==== TESTES NOVO ====
@@ -130,44 +136,29 @@ void loop() {
 // ==== MOVIMENTOS COM DELAY ====
 
   if(Cima) {
-    for (int i=0; i<100000; i++) {
-      andarCima();
-      runSteppers();
-    }
-    limparVariaveisMovimento();
+    andarCima();
   }
 
   if(Baixo) {
-    for (int i=0; i<100000; i++) {
-      andarBaixo();
-      runSteppers();
-    }
-    limparVariaveisMovimento();
+    andarBaixo();
   }
 
   if(Esquerda) {
-    for (int i=0; i<100000; i++) {
-      andarEsquerda();
-      runSteppers();
-    }
-    limparVariaveisMovimento();
+    girarEsquerda();
   }
 
   if(Direita) {
-    for (int i=0; i<100000; i++) {
-      andarDireita();
-      runSteppers();
-    }
-    limparVariaveisMovimento();
+    girarDireita();
   }
 
-  //Finaliza o movimento reiniciando as variáveis
-  Baixo = false;
-  Cima = false;
-  Direita = false;
-  Esquerda = false;
-  InicioMovimento = true;
-  AjusteGeral = false;
+  if(Stop) {
+    Baixo = false;
+    Cima = false;
+    Direita = false;
+    Esquerda = false;
+    InicioMovimento = true;
+    AjusteGeral = false;
+  }
   
   //Ativa os motores caso esteja andando normalmente
   if((Cima || Baixo || Esquerda || Direita) && !AjusteGeral) {
