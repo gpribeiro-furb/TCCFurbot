@@ -130,17 +130,35 @@ def detect_lines(frame):
     _grupos = []
     remove_from_last_group_by_id(-1)
 
+    # # Convert to grayscale
+    # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # # Apply Gaussian blur
+    # blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    # # Apply Canny edge detector
+    # edges = cv2.Canny(blur, 70, 150, apertureSize=3)
+    # cv2.imshow('Ee', edges)
+    #
+    # # Use HoughLinesP to detect lines
+    # # These parameters can be adjusted to better detect lines in your specific setting
+    # lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=50, maxLineGap=50)
+
     # Convert to grayscale
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    # Apply Gaussian blur
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Preprocess the image to remove noise
+    gray = cv2.GaussianBlur(gray, (5, 5), 0)
+
+    # Apply adaptive thresholding
+    thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 8)
+    cv2.imshow('thresh', thresh)
+
     # Apply Canny edge detector
-    edges = cv2.Canny(blur, 70, 150, apertureSize=3)
-    cv2.imshow('Ee', edges)
+    edges = cv2.Canny(thresh, 50, 150)
+    cv2.imshow('edges', edges)
 
     # Use HoughLinesP to detect lines
-    # These parameters can be adjusted to better detect lines in your specific setting
     lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=50, maxLineGap=50)
+
 
     lines_aux = []
     if lines is not None:
