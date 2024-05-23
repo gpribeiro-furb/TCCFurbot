@@ -35,10 +35,13 @@ int tempoDelay = 0;
 //Variável para teste
 int ultimoTeste = 0;
 
+String incoming = "";
+
 void setup() {
   //Setup da serial
   Serial.begin(9600);
   Serial.println("Start..");
+  Serial1.begin(115200);
 
   //Setup de um motor, o único necessário
   pinMode(14, OUTPUT);
@@ -67,6 +70,28 @@ void limparVariaveisMovimento() {
 }
 
 void loop() {
+  if (Serial1.available() > 0) {
+      incoming  = Serial1.readString();
+      Serial.println(incoming);
+      incoming.trim();
+
+      if(incoming == "UP") {
+        goCima();
+      }
+      if(incoming == "DOWN") {
+        goBaixo();
+      }
+      if(incoming == "LEFT") {
+        goEsquerda();
+      }
+      if(incoming == "RIGHT") {
+        goDireita();
+      }
+      if(incoming == "STOP") {
+        goStop();
+      }
+  }
+
   //Setup para receber os comandos via InfraRed
   if (irrecv.decode(&results)) { 
     Serial.println(results.value, HEX);
@@ -79,34 +104,30 @@ void loop() {
       case 0xFF22DD:
       case 0xFF0008F7:
       //Esquerda
-      limparVariaveisMovimento();
-      Esquerda = true;
+      goEsquerda();
       break;
       
       case 0xFF629D:
       case 0xFF0019E6:
       //Cima
-      limparVariaveisMovimento();
-      Cima = true;
+      goCima();
       break;
       
       case 0xFFC23D:
       case 0xFF005EA1:
       //Direita
-      limparVariaveisMovimento();
-      Direita = true;
+      goDireita();
       break;
       
       case 0xFFA857:
       case 0xFF0016E9:
       //Baixo
-      limparVariaveisMovimento();
-      Baixo = true;
+      goBaixo();
       break;
       
       case 0xFF02FD:
       case 0xBF4000FF:
-      limparVariaveisMovimento();
+      goStop();
       break;
     }
     
@@ -164,6 +185,32 @@ void loop() {
   if((Cima || Baixo || Esquerda || Direita) && !AjusteGeral) {
     runSteppers();
   }
+}
+
+// ==== COMANDOS ====
+
+void goCima() {
+  limparVariaveisMovimento();
+  Cima = true;
+}
+
+void goBaixo() {
+  limparVariaveisMovimento();
+  Baixo = true;
+}
+
+void goEsquerda() {
+  limparVariaveisMovimento();
+  Esquerda = true;
+}
+
+void goDireita() {
+  limparVariaveisMovimento();
+  Direita = true;
+}
+
+void goStop() {
+  limparVariaveisMovimento();
 }
 
 // ==== FUNÇÕES BÁSICAS ====
