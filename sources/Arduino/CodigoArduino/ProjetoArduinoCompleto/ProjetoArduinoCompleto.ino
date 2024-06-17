@@ -22,6 +22,8 @@ bool Cima = false;
 bool Baixo = false;
 bool Esquerda = false;
 bool Direita = false;
+bool DEsquerda = false;
+bool DDireita = false;
 bool Stop = false;
 bool InicioMovimento = false;
 bool AjusteGeral = false;
@@ -34,6 +36,7 @@ int tempoDelay = 0;
 
 //Variável para teste
 int ultimoTeste = 0;
+int quantidadeCorrecao = 0;
 
 String incoming = "";
 
@@ -65,7 +68,10 @@ void limparVariaveisMovimento() {
   Cima = false;
   Baixo = false;
   Direita = false;
+  DEsquerda = false;
+  DDireita = false;
   Stop = false;
+  quantidadeCorrecao = 0;
   Serial.println("Limpado");
 }
 
@@ -90,6 +96,46 @@ void loop() {
       if(incoming == "STOP") {
         goStop();
       }
+      if(incoming.startsWith("LEFT_")) {
+        String numberString = incoming.substring(5);  // 5 is the length of "LEFT_"
+    
+        // Convert the extracted string to a float
+        float number = numberString.toFloat();
+        float scaledValue = (number / 90.0) * 255000.0;
+        
+        // Use the float value
+        goEsquerda((int)scaledValue);
+      }
+      if(incoming.startsWith("RIGHT_")) {
+        String numberString = incoming.substring(6);  // 5 is the length of "RIGHT_"
+    
+        // Convert the extracted string to a float
+        float number = numberString.toFloat();
+        float scaledValue = (number / 90.0) * 255000.0;
+        
+        // Use the float value
+        goDireita((int)scaledValue);
+      }
+      if(incoming.startsWith("DLEFT_")) {
+        String numberString = incoming.substring(6);  // 5 is the length of "LEFT_"
+    
+        // Convert the extracted string to a float
+        float number = numberString.toFloat();
+        float scaledValue = (number / 148.0) * 255000.0;
+        
+        // Use the float value
+        goDEsquerda((int)scaledValue);
+      }
+      if(incoming.startsWith("DRIGHT_")) {
+        String numberString = incoming.substring(7);  // 5 is the length of "RIGHT_"
+    
+        // Convert the extracted string to a float
+        float number = numberString.toFloat();
+        float scaledValue = (number / 148.0) * 255000.0;
+        
+        // Use the float value
+        goDDireita((int)scaledValue);
+      }
   }
 
   //Setup para receber os comandos via InfraRed
@@ -101,28 +147,39 @@ void loop() {
 
     //Se o robô está parado
     switch(results.value) {
-      case 0xFF22DD:
-      case 0xFF0008F7:
+      // case 0xFF22DD:
+      // case 0xFF0008F7:
+      // //Esquerda
+      // goEsquerda();
+      // break;
+      
+      // case 0xFF629D:
+      // case 0xFF0019E6:
+      // //Cima
+      // goCima();
+      // break;
+      
+      // case 0xFFC23D:
+      // case 0xFF005EA1:
+      // //Direita
+      // goDireita();
+      // break;
+      
+      // case 0xFFA857:
+      // case 0xFF0016E9:
+      // //Baixo
+      // goBaixo();
+      // break;
+
+      case 0xFF30CF:
       //Esquerda
-      goEsquerda();
+      Serial.println("Recebeu correto");
+      goDEsquerda();
       break;
       
-      case 0xFF629D:
-      case 0xFF0019E6:
-      //Cima
-      goCima();
-      break;
-      
-      case 0xFFC23D:
-      case 0xFF005EA1:
+      case 0xFF7A85:
       //Direita
-      goDireita();
-      break;
-      
-      case 0xFFA857:
-      case 0xFF0016E9:
-      //Baixo
-      goBaixo();
+      goDDireita();
       break;
       
       case 0xFF02FD:
@@ -165,11 +222,47 @@ void loop() {
   }
 
   if(Esquerda) {
-    girarEsquerda();
+    if(quantidadeCorrecao == 0) {
+      quantidadeCorrecao = 255000;
+    }
+    for (int i=0; i<quantidadeCorrecao; i++) {
+      girarEsquerda();
+      runSteppers();
+    }
+    limparVariaveisMovimento();
   }
 
   if(Direita) {
-    girarDireita();
+    if(quantidadeCorrecao == 0) {
+      quantidadeCorrecao = 255000;
+    }
+    for (int i=0; i<quantidadeCorrecao; i++) {
+      girarDireita();
+      runSteppers();
+    }
+    limparVariaveisMovimento();
+  }
+  
+  if(DEsquerda) {
+    if(quantidadeCorrecao == 0) {
+      quantidadeCorrecao = 255000;
+    }
+    for (int i=0; i<quantidadeCorrecao; i++) {
+      andarEsquerda();
+      runSteppers();
+    }
+    limparVariaveisMovimento();
+  }
+
+  if(DDireita) {
+    if(quantidadeCorrecao == 0) {
+      quantidadeCorrecao = 255000;
+    }
+    for (int i=0; i<quantidadeCorrecao; i++) {
+      andarDireita();
+      runSteppers();
+    }
+    limparVariaveisMovimento();
   }
 
   if(Stop) {
@@ -177,6 +270,8 @@ void loop() {
     Cima = false;
     Direita = false;
     Esquerda = false;
+    DDireita = false;
+    DEsquerda = false;
     InicioMovimento = true;
     AjusteGeral = false;
   }
@@ -204,9 +299,43 @@ void goEsquerda() {
   Esquerda = true;
 }
 
+void goEsquerda(int angulo) {
+  limparVariaveisMovimento();
+  Esquerda = true;
+  quantidadeCorrecao = angulo;
+}
+
 void goDireita() {
   limparVariaveisMovimento();
   Direita = true;
+}
+
+void goDireita(int angulo) {
+  limparVariaveisMovimento();
+  Direita = true;
+  quantidadeCorrecao = angulo;
+}
+
+void goDEsquerda() {
+  limparVariaveisMovimento();
+  DEsquerda = true;
+}
+
+void goDEsquerda(int valor) {
+  limparVariaveisMovimento();
+  DEsquerda = true;
+  quantidadeCorrecao = valor;
+}
+
+void goDDireita() {
+  limparVariaveisMovimento();
+  DDireita = true;
+}
+
+void goDDireita(int valor) {
+  limparVariaveisMovimento();
+  DDireita = true;
+  quantidadeCorrecao = valor;
 }
 
 void goStop() {
