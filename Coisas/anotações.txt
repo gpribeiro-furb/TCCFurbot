@@ -1,0 +1,16 @@
+Correção quando parar
+- Angulo
+- Meio do bloco
+
+Tentar fazer correção durante movimento
+- as duas linhas devem ficar no -85 e 85
+
+depois -90 vira 0
+
+
+
+Valores meio:
+Vertical esquerda: X = 243
+Vertical direita: X = 553
+meio = 398 
+
