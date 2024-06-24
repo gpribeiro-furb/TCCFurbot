@@ -8,7 +8,7 @@ import threading
 # Replace the below URL with your ESP32-CAM video stream URL
 ip = '192.168.1.8'
 stream_url = 'http://'+ ip +':82/stream'
-post_url = 'http://'+ ip +':81/test'
+post_url = 'http://'+ ip +':81/comando'
 
 _grupos = []
 _lastGrupos = []

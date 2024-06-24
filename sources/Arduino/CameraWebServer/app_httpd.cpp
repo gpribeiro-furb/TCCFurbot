@@ -1256,7 +1256,7 @@ void startCameraServer()
     };
 
     httpd_uri_t test_uri = {
-        .uri       = "/test",
+        .uri       = "/comando",
         .method    = HTTP_POST,
         .handler   = post_test,
         .user_ctx  = NULL
